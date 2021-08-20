@@ -8,6 +8,9 @@
 #include <dt-bindings/spmi/spmi.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 
+#define MHZ_TO_MBPS(mhz, w) ((mhz * 1000000 * w) / (1024 * 1024))
+#define BW_OPP_ENTRY(mhz, w) opp-mhz {opp-hz = /bits/ 64 <MHZ_TO_MBPS(mhz, w)>;}
+
 / {
 	model = "Qualcomm Technologies, Inc. MSM8917";
 	compatible = "qcom,msm8917";
@@ -540,20 +543,24 @@
 		};
 	};
 
+	ddr_bw_opp_table: ddr-bw-opp-table {
+		compatible = "operating-points-v2";
+		BW_OPP_ENTRY( 100, 8); /*  769 MB/s */
+		BW_OPP_ENTRY( 211, 8); /*  1611 MB/s */
+		BW_OPP_ENTRY( 297, 8); /*  2270 MB/s */
+		BW_OPP_ENTRY( 384, 8); /*  2929 MB/s */
+		BW_OPP_ENTRY( 556, 8); /*  4248 MB/s */
+		BW_OPP_ENTRY( 595, 8); /*  4541 MB/s */
+		BW_OPP_ENTRY( 672, 8); /*  5126 MB/s */
+		BW_OPP_ENTRY( 740, 8); /*  5645 MB/s */
+	};
+
 	cpubw: qcom,cpubw {
 		compatible = "qcom,devbw";
-		governor = "cpufreq";
+		governor = "performance";
 		qcom,src-dst-ports = <1 512>;
 		qcom,active-only;
-		qcom,bw-tbl =
-			<   769 /*  100.8 MHz */ >,
-			<  1611 /*  211.2 MHz */ >,
-			<  2270 /*  297.6 MHz */ >,	/*SVS */
-			<  2929 /*  384   MHz */ >,
-			<  4248 /*  556.8 MHz */ >,	/*SVS+*/
-			<  4541 /*  595.2 MHz */ >,	/*NOM*/
-			<  5126 /*  672   MHz */ >,	/*NOM+*/
-			<  5645 /*  740   MHz */ >;	/*TURBO*/
+		operating-points-v2 = <&ddr_bw_opp_table>;
 	};
 
 	qcom,cpu-bwmon {
@@ -565,16 +572,24 @@
 		qcom,target-dev = <&cpubw>;
 	};
 
-	devfreq-cpufreq {
-		cpubw-cpufreq {
-		target-dev = <&cpubw>;
-		cpu-to-dev-map =
-			<  960000  2270 >,
-			< 1094400  4248 >,
-			< 1248000  4541 >,
-			< 1401000  5126 >,
-			< 1497600  5645 >;
-		};
+	cpu0_cpu_ddr_latfloor: qcom,cpu0-cpu-ddr-latfloor {
+		compatible = "qcom,devbw";
+		governor = "performance";
+		qcom,src-dst-ports = <1 512>;
+		qcom,active-only;
+		operating-points-v2 = <&ddr_bw_opp_table>;
+	};
+
+	cpu0_computemon: qcom,cpu0-computemon {
+		compatible = "qcom,arm-cpu-mon";
+		qcom,cpulist = <&CPU0 &CPU1 &CPU2 &CPU3>;
+		qcom,target-dev = <&cpu0_cpu_ddr_latfloor>;
+		qcom,core-dev-table =
+			<  960000 MHZ_TO_MBPS( 297, 8) >,
+			< 1094400 MHZ_TO_MBPS( 556, 8) >,
+			< 1248000 MHZ_TO_MBPS( 595, 8) >,
+			< 1401000 MHZ_TO_MBPS( 672, 8) >,
+			< 1497600 MHZ_TO_MBPS( 710, 8) >;
 	};
 
 	qcom,wdt@b017000 {

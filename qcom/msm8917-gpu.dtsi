@@ -6,6 +6,19 @@
 		compatible = "qcom,kgsl-busmon";
 	};
 
+	gpu_bw_tbl: gpu-bw-tbl {
+		compatible = "operating-points-v2";
+		opp-0   { opp-hz = /bits/ 64 < 0 >;    }; /* OFF */
+		opp-100 { opp-hz = /bits/ 64 < 769 >;  }; /* 1. DDR:100.80MHz */
+		opp-211 { opp-hz = /bits/ 64 < 1611 >; }; /* 2. DDR:211.20MHz */
+		opp-297 { opp-hz = /bits/ 64 < 2270 >; }; /* 3. DDR:297.60MHz */
+		opp-384 { opp-hz = /bits/ 64 < 2929 >; }; /* 4. DDR:384.00MHz */
+		opp-556 { opp-hz = /bits/ 64 < 4248 >; }; /* 5. DDR:556.80MHz */
+		opp-595 { opp-hz = /bits/ 64 < 4541 >; }; /* 6. DDR:595.20MHz */
+		opp-672 { opp-hz = /bits/ 64 < 5126 >; }; /* 7. DDR:672.00MHz */
+		opp-740 { opp-hz = /bits/ 64 < 5639 >; }; /* 8. DDR:739.20MHz */
+	};
+
 	/* Bus governor */
 	gpubw: qcom,gpubw {
 		compatible = "qcom,devbw";
@@ -16,16 +29,7 @@
 		 * Internally Divides by 2 for Gen1 DDR PHY.
 		 */
 		qcom,active-only;
-		qcom,bw-tbl =
-			< 0 >,    /* Off */
-			< 769 >,  /* 1. DDR:100.80 MHz BIMC: 201.60 MHz */
-			< 1611 >, /* 2. DDR:211.20 MHz BIMC: 422.40 MHz */
-			< 2270 >, /* 3. DDR:297.60 MHz BIMC: 595.20 MHz */
-			< 2929 >, /* 4. DDR:384.00 MHz BIMC: 768.00 MHz */
-			< 4248 >, /* 5. DDR:556.80 MHz BIMC: 1113.60 MHz */
-			< 4541 >, /* 6. DDR:595.20 MHz BIMC: 1190.40 MHz */
-			< 5126 >, /* 7. DDR:672.00 MHz BIMC: 1344.00 MHz */
-			< 5639 >; /* 8. DDR:739.20 MHz BIMC: 1478.40 MHz */
+		operating-points-v2 = <&gpu_bw_tbl>;
 	};
 
 	msm_gpu: qcom,kgsl-3d0@1c00000 {

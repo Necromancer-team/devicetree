@@ -8,6 +8,9 @@
 #include <dt-bindings/spmi/spmi.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 
+#define MHZ_TO_MBPS(mhz, w) ((mhz * 1000000 * w) / (1024 * 1024))
+#define BW_OPP_ENTRY(mhz, w) opp-mhz {opp-hz = /bits/ 64 <MHZ_TO_MBPS(mhz, w)>;}
+
 / {
 	model = "Qualcomm Technologies, Inc. MSM8937";
 	compatible = "qcom,msm8937";
@@ -504,28 +507,32 @@
 		compatible = "devfreq-simple-dev";
 		clock-names = "devfreq_clk";
 		clocks = <&apsscc APCS_MUX_CCI_CLK>;
-		governor = "cpufreq";
+		governor = "performance";
 		freq-tbl-khz =
 			<  400000 >,
 			<  533333 >;
 	};
 
+	ddr_bw_opp_table: ddr-bw-opp-table {
+		compatible = "operating-points-v2";
+		BW_OPP_ENTRY( 100, 8); /*  769 MB/s */
+		BW_OPP_ENTRY( 211, 8); /* 1611 MB/s */
+		BW_OPP_ENTRY( 278, 8); /* 2124 MB/s */
+		BW_OPP_ENTRY( 384, 8); /* 2929 MB/s */
+		BW_OPP_ENTRY( 537, 8); /* 4101 MB/s */
+		BW_OPP_ENTRY( 556, 8); /* 4248 MB/s */
+		BW_OPP_ENTRY( 662, 8); /* 5053 MB/s */
+		BW_OPP_ENTRY( 748, 8); /* 5712 MB/s */
+		BW_OPP_ENTRY( 806, 8); /* 6152 MB/s */
+		BW_OPP_ENTRY( 921, 8); /* 7031 MB/s */
+	};
+
 	cpubw: qcom,cpubw {
 		compatible = "qcom,devbw";
-		governor = "cpufreq";
+		governor = "performance";
 		qcom,src-dst-ports = <1 512>;
 		qcom,active-only;
-		qcom,bw-tbl =
-			<   769 /*  100.8 MHz */ >,
-			<  1611 /*  211.2 MHz */ >,
-			<  2124 /*  278.4 MHz */ >,
-			<  2929 /*  384   MHz */ >,	/* SVS	*/
-			<  4101 /*  537.6 MHz */ >,
-			<  4248 /*  556.8 MHz */ >,
-			<  5053 /*  662.4 MHz */ >,	/* SVS+	 */
-			<  5712 /*  748.8 MHz */ >,     /* NOM   */
-			<  6152 /*  806.4 MHz */ >,     /* NOM+  */
-			<  7031 /*  921.6 MHz */ >;     /* TURBO */
+		operating-points-v2 = <&ddr_bw_opp_table>;
 	};
 
 	qcom,cpu-bwmon {
@@ -537,64 +544,43 @@
 		qcom,target-dev = <&cpubw>;
 	};
 
-	mincpubw: qcom,mincpubw {
+	cpu0_cpu_ddr_latfloor: qcom,cpu0-cpu-ddr-latfloor {
 		compatible = "qcom,devbw";
-		governor = "cpufreq";
+		governor = "performance";
 		qcom,src-dst-ports = <1 512>;
 		qcom,active-only;
-		qcom,bw-tbl =
-			<   769 /*  100.8 MHz */ >,
-			<  1611 /*  211.2 MHz */ >,
-			<  2124 /*  278.4 MHz */ >,
-			<  2929 /*  384   MHz */ >,	/* SVS	*/
-			<  4101 /*  537.6 MHz */ >,
-			<  4248 /*  556.8 MHz */ >,
-			<  5053 /*  662.4 MHz */ >,	/* SVS+	 */
-			<  5712 /*  748.8 MHz */ >,     /* NOM   */
-			<  6152 /*  806.4 MHz */ >,     /* NOM+  */
-			<  7031 /*  921.6 MHz */ >;     /* TURBO */
+		operating-points-v2 = <&ddr_bw_opp_table>;
 	};
 
-	devfreq-cpufreq {
-		cpubw-cpufreq {
-		target-dev = <&cpubw>;
-		cpu-to-dev-map-0 =
-			<  998400  2929 >,      /* SVS   */
-			< 1094400  5053 >,	/* NOM   */
-			< 1248000  5712 >,	/* NOM+  */
-			< 1344000  7031 >,
-			< 1497600  7031 >;	/* TURBO */
-		cpu-to-dev-map-4 =
-			<  806400  2929 >,	/* SVS  */
-			<  902400  5053 >,	/* NOM   */
-			<  998400  6152 >,	/* NOM+  */
-			< 1209600  7031 >;	/* TURBO */
-		};
+	cpu0_computemon: qcom,cpu0-computemon {
+		compatible = "qcom,arm-compute-mon";
+		qcom,cpulist = <&CPU0 &CPU1 &CPU2 &CPU3>;
+		qcom,target-dev = <&cpu0_cpu_ddr_latfloor>;
+		qcom,core-dev-table =
+			<  768000 MHZ_TO_MBPS(384, 8) >,
+			<  902400 MHZ_TO_MBPS(662, 8) >,
+			<  998400 MHZ_TO_MBPS(806, 8) >,
+			< 1209600 MHZ_TO_MBPS(921, 8) >;
+	};
 
-		cci-cpufreq {
-		target-dev = <&cci_cache>;
-		cpu-to-dev-map-0 =
-			<  998400  400000 >,    /* SVS   */
-			< 1094400  400000 >,	/* NOM   */
-			< 1248000  533333 >,	/* NOM+  */
-			< 1344000  533333 >,
-			< 1497600  533333 >;	/* TURBO */
-		cpu-to-dev-map-4 =
-			<  806400  400000 >,	/* SVS  */
-			<  902400  400000 >,	/* NOM   */
-			<  998400  533333 >,	/* NOM+  */
-			< 1209600  533333 >;	/* TURBO */
-		};
+	cpu4_cpu_ddr_latfloor: qcom,cpu4-cpu-ddr-latfloor {
+		compatible = "qcom,devbw";
+		governor = "performance";
+		qcom,src-dst-ports = <1 512>;
+		qcom,active-only;
+		operating-points-v2 = <&ddr_bw_opp_table>;
+	};
 
-		mincpubw-cpufreq {
-			target-dev = <&mincpubw>;
-			cpu-to-dev-map-0 =
-				< 1094400 2929 >,
-				< 1497600 4248 >;
-			cpu-to-dev-map-4 =
-				<  998400 2929 >,
-				< 1209600 4248 >;
-		};
+	cpu4_computemon: qcom,cpu4-computemon {
+		compatible = "qcom,arm-compute-mon";
+		qcom,cpulist = <&CPU4 &CPU5 &CPU6 &CPU7>;
+		qcom,target-dev = <&cpu4_cpu_ddr_latfloor>;
+		qcom,core-dev-table =
+			<  960000 MHZ_TO_MBPS(384, 8) >,
+			< 1094400 MHZ_TO_MBPS(662, 8) >,
+			< 1248000 MHZ_TO_MBPS(748, 8) >,
+			< 1344000 MHZ_TO_MBPS(806, 8) >,
+			< 1497600 MHZ_TO_MBPS(921, 8) >;
 	};
 
 	qcom,ipc-spinlock@1905000 {

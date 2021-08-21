@@ -1503,7 +1503,7 @@
 #include "pm8937-rpm-regulator.dtsi"
 #include "msm8917-regulator.dtsi"
 #include "pm8937.dtsi"
-#include "msm-gdsc-8916.dtsi"
+#include "msm8937-gdsc.dtsi"
 #include "msm8917-thermal.dtsi"
 
 &gdsc_venus {

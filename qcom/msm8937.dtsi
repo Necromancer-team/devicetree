@@ -1604,7 +1604,7 @@
 #include "pm8937.dtsi"
 #include "msm8937-audio.dtsi"
 #include "msm8937-camera.dtsi"
-#include "msm-gdsc-8916.dtsi"
+#include "msm8937-gdsc.dtsi"
 #include "msm8937-thermal.dtsi"
 
 &gdsc_venus {
@@ -1672,7 +1672,6 @@
 };
 
 &gdsc_oxili_cx {
-	reg = <0x1859044 0x4>;
 	clock-names = "core_clk";
 	clocks = <&gcc GCC_OXILI_GFX3D_CLK>;
 	status = "okay";

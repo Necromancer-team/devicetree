@@ -105,7 +105,7 @@
 			};
 		};
 		
-		cam_sensor_rear_default: cam_sensor_rear_default {
+		cam_sensor_rear_reset: cam_sensor_rear_reset {
 			/* RESET, STANDBY */
 			mux {
 				pins = "gpio36", "gpio35";
@@ -119,7 +119,7 @@
 			};
 		};
 		
-		cam_sensor_rear_sleep: cam_sensor_rear_sleep {
+		cam_sensor_rear_reset_sleep: cam_sensor_rear_reset_sleep {
 			/* RESET, STANDBY */
 			mux {
 				pins = "gpio36","gpio35";

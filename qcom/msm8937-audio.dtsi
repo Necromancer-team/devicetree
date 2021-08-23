@@ -309,7 +309,7 @@
 		qcom,node_has_rpm_clock;
 		#clock-cells = <1>;
 		qcom,audio-ref-clk-gpio = <&pm8937_gpios 1 0>;
-		clocks = <&clock_gcc clk_div_clk2>;
+		clocks = <&rpmcc RPM_SMD_DIV_CLK2>;
 		pinctrl-0 = <&cdc_mclk2_sleep>;
 		pinctrl-1 = <&cdc_mclk2_active>;
 	};
@@ -377,11 +377,11 @@
 				17 18 19 20 21 22 23 24 25 26 27 28 29 30>;
 
 		qcom,wcd-rst-gpio-node = <&wcd_rst_gpio>;
-
+		/* WIP
 		clock-names = "wcd_clk", "wcd_native_clk";
 		clocks = <&clock_audio clk_audio_pmi_clk>,
 			<&clock_audio clk_audio_ap_clk2>;
-
+		*/
 		qcom,cdc-static-supplies =
 				"cdc-vdd-buck",
 				"cdc-buck-sido",
